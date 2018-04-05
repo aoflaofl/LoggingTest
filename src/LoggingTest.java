@@ -33,10 +33,11 @@ public class LoggingTest {
 
     /*
      * If you can't override toString() and need to output a log message, here is
-     * one way to do it without calling the output method unnecessarily.
+     * one way to do it without calling the String creation method unnecessarily.
+     * There are similar methods for all trace levels.
      */
     if (logger.isTraceEnabled()) {
-      logger.trace("Trace Logging Parameter and custom String: {}", answer.toInfoLoggingString());
+      logger.trace("Trace Logging Parameter and custom String: {}", answer.toTraceLoggingString());
     }
   }
 
@@ -55,8 +56,8 @@ public class LoggingTest {
       return map.toString();
     }
 
-    private String toInfoLoggingString() {
-      return "The Ultimate Answer to Life, the Universe and Everything.";
+    private String toTraceLoggingString() {
+      return "Trying to figure out the Ultimate Answer to Life, the Universe and Everything.";
     }
   }
 }
