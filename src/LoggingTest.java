@@ -5,25 +5,44 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LoggingTest {
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     Logger logger = LoggerFactory.getLogger(LoggingTest.class);
 
-    UltimateAnswer s = new LoggingTest.UltimateAnswer();
+    UltimateAnswer answer = new LoggingTest.UltimateAnswer();
 
     /*
      * Don't do this. It creates a StringBuilder to concatenate the Strings.
      */
-    logger.info("String Concatenation: " + s);
+    logger.info("Info Logging String Concatenation: " + answer);
 
-    logger.info("Hello World {}", s);
-    if (logger.isInfoEnabled()) {
-      logger.info("Hello World {}", s.toInfoLoggingString());
+    /*
+     * Don't do this. Won't get logged (because it's a trace message), but
+     * toString() will still be called.
+     */
+    logger.trace("Trace Logging toString(): {}", answer.toString());
+
+    /*
+     * Do this. Won't call toString() unless logging is at trace level.
+     */
+    logger.trace("Trace Logging Parameter: {}", answer);
+
+    /*
+     * Do this. This will call toString() when the message is logged.
+     */
+    logger.info("Info Logging Parameter: {}", answer);
+
+    /*
+     * If you can't override toString() and need to output a log message, here is
+     * one way to do it without calling the output method unnecessarily.
+     */
+    if (logger.isTraceEnabled()) {
+      logger.trace("Trace Logging Parameter and custom String: {}", answer.toInfoLoggingString());
     }
   }
 
-  static class UltimateAnswer {
+  private static class UltimateAnswer {
 
-    static Map<String, String> map = new HashMap<>();
+    private final static Map<String, String> map = new HashMap<>();
 
     static {
       map.put("41", "Almost");
@@ -36,7 +55,7 @@ public class LoggingTest {
       return map.toString();
     }
 
-    public String toInfoLoggingString() {
+    private String toInfoLoggingString() {
       return "The Ultimate Answer to Life, the Universe and Everything.";
     }
   }
