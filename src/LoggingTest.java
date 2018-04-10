@@ -5,10 +5,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LoggingTest {
+  private static final Logger logger = LoggerFactory.getLogger(LoggingTest.class);
+
   public static void main(final String[] args) {
-    Logger logger = LoggerFactory.getLogger(LoggingTest.class);
 
     UltimateAnswer answer = new LoggingTest.UltimateAnswer();
+
+    // invalid: this logging method has 2 placeholders, but given parameter is only
+    // 1.
+    logger.info("msg: {}, {}.", "Hello");
+
+    // valid
+    logger.info("msg: {}, {}.", "Hello", "World");
+
+    // invalid: Throwable instance does not need placeholder
+    logger.error("msg: {}, {}", "Hello", new RuntimeException());
+
+    // valid
+    logger.error("msg: {}", "Hello", new RuntimeException());
 
     /*
      * Don't do this. It creates a StringBuilder to concatenate the Strings.
@@ -30,11 +44,11 @@ public class LoggingTest {
      * Do this. This will call toString() when the message is logged.
      */
     logger.info("Info Logging Parameter: {}", answer);
-
+    logger.info("Info Logging Parameter: {} {}", "Something", new RuntimeException("Here in exception."));
     /*
      * If you can't override toString() and need to output a log message, here is
      * one way to do it without calling the String creation method unnecessarily.
-     * There are similar methods for all trace levels.
+     * There are similar methods for all log levels.
      */
     if (logger.isTraceEnabled()) {
       logger.trace("Trace Logging Parameter and custom String: {}", answer.toTraceLoggingString());
