@@ -4,11 +4,17 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Demonstrate correct and incorrect ways to do SLF4J logging.
+ * 
+ * @author gejohann
+ *
+ */
 public class LoggingTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTest.class);
 
   public static void main(final String[] args) {
-    /** Just an object to use as a logging example. */
+    /** An object to use as a logging example. */
     UltimateAnswer answer = new LoggingTest.UltimateAnswer();
 
     /*
@@ -20,10 +26,10 @@ public class LoggingTest {
     LOGGER.info("msg: {}, {}.", "Hello", "World");
 
     // invalid: Throwable instance does not need placeholder
-    LOGGER.error("msg: {}, {}", "Hello", new RuntimeException());
+    LOGGER.error("msg: {}, {}", "Hello", new RuntimeException("Wrong way to log an exception."));
 
     // valid
-    LOGGER.error("msg: {}", "Hello", new RuntimeException());
+    LOGGER.error("msg: {}", "Hello", new RuntimeException("Correct way to log an exception."));
 
     /*
      * Don't do this. It creates a StringBuilder to concatenate the Strings.
