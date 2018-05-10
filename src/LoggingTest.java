@@ -11,24 +11,28 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class LoggingTest {
+  /**
+   * Get the logger object. Some sites recommend making the logger static, some
+   * don't. For performance reasons I think it should be static so there's only
+   * one instance. One case where it can't be static is if the logger is injected
+   * into the object.
+   */
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTest.class);
 
   public static void main(final String[] args) {
     /** An object to use as a logging example. */
     UltimateAnswer answer = new LoggingTest.UltimateAnswer();
 
-    /*
-     * invalid: this logging method has 2 placeholders, but only one parameter.
-     */
+    // Invalid: this logging method has 2 placeholders, but only one parameter.
     LOGGER.info("msg: {}, {}.", "Hello");
 
-    // valid
+    // Valid
     LOGGER.info("msg: {}, {}.", "Hello", "World");
 
     // invalid: Throwable instance does not need placeholder
     LOGGER.error("msg: {}, {}", "Hello", new RuntimeException("Wrong way to log an exception."));
 
-    // valid
+    // valid. The Exception, including the message, will be printed in the log.
     LOGGER.error("msg: {}", "Hello", new RuntimeException("Correct way to log an exception."));
 
     /*
@@ -71,11 +75,13 @@ public class LoggingTest {
     LOGGER.info("Here is a calc : {}", a - b);
 
     LOGGER.info("Here is an array : {} {} {}", (Object[]) args);
+    
+    LOGGER.info("Logging with \n formatting!");
   }
 
   public static void logIfDebugEnabled(Object... argument) {
     if (LOGGER.isDebugEnabled()) {
-      StringBuffer logString = new StringBuffer();
+      StringBuilder logString = new StringBuilder();
       for (Object object : argument) {
         logString.append(object);
       }
