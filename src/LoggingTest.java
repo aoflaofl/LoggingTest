@@ -56,10 +56,10 @@ public class LoggingTest {
     LOGGER.error("msg: {}", "Hello", new RuntimeException("Correct way to log an exception."));
 
     /*
-     * Create a big ugly map of nothing but random Strings. This is something that
-     * would never be logged unless necessary for debugging and takes work to
-     * generate the String representation. An important goal is to make sure logging
-     * this Map does not impact application performance.
+     * Create a big ugly map of random Strings. This is something that would never
+     * be logged unless necessary for debugging and takes work to generate the
+     * String representation. An important goal is to make sure logging this Map
+     * does not impact application performance.
      */
     RandomString gen = new RandomString(10, ThreadLocalRandom.current());
     Map<String, String> bigUglyMap = new HashMap<>(1000);
