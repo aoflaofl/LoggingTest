@@ -21,7 +21,7 @@ public class LoggingTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTest.class);
 
   /**
-   * Try to cause every kind of logging problem.
+   * Try to cause every kind of logging problem and show best practices.
    * 
    * @param args
    *          Unused
@@ -58,8 +58,10 @@ public class LoggingTest {
     /*
      * Create a big ugly map of random Strings. This is something that would never
      * be logged unless necessary for debugging and takes work to generate the
-     * String representation. An important goal is to make sure logging this Map
-     * does not impact application performance.
+     * String representation.
+     * 
+     * An important goal with logging is to make sure logging this Map does not
+     * impact application performance.
      */
     RandomString gen = new RandomString(10, ThreadLocalRandom.current());
     Map<String, String> bigUglyMap = new HashMap<>(1000);
@@ -67,13 +69,12 @@ public class LoggingTest {
       bigUglyMap.put(gen.nextString(), gen.nextString());
     }
 
-    /** An object to use as a logging example. */
-    // UltimateAnswer answer = new LoggingTest.UltimateAnswer();
-
     /*
      * Don't do this. It creates a StringBuilder behind the scenes to concatenate
      * the Strings. In Java, all arguments to a method have to be resolved to a
-     * primitive or Object reference before the method is called.
+     * primitive or Object reference before the method is called, and for logging,
+     * all primitives will be boxed. Therefore the following line wastes the time it
+     * takes to build the final String for concatenation.
      */
     LOGGER.trace("Trace Logging String Concatenation: " + bigUglyMap);
 
@@ -115,11 +116,17 @@ public class LoggingTest {
 
     LOGGER.info("Here is an array : {} {} {}", (Object[]) args);
 
+    // You can use newlines and other formatting in log messages. It will just make
+    // the logs look worse.
     LOGGER.info("Logging with \n formatting!");
   }
 
   /**
    * Trying to make a logging helper function.
+   * 
+   * This is something to try, but keep in mind that the Object... vararg means
+   * the arguments to this method have to be Object references, so primitives will
+   * be boxed and all function calls will be resolved to an Object reference.
    * 
    * @param argument
    *          Object list of things to be logged.
