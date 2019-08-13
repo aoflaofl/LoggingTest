@@ -11,7 +11,12 @@ import org.slf4j.LoggerFactory;
  * @author gejohann
  *
  */
-public class LoggingTest {
+public final class LoggingTest {
+
+  /** Instantiate nothing! */
+  private LoggingTest() {
+  }
+
   /**
    * Get the logger object. Some sites recommend making the logger static, some
    * don't. For performance reasons I think it should be static so there's only
@@ -27,33 +32,62 @@ public class LoggingTest {
    *          Unused
    */
   public static void main(final String[] args) {
+    String key = "Hello";
+    String value = "World!";
 
     /*
-     * First, some general best practices for using {} place-holders when logging
-     * messages and Exceptions.
+     * Don't do this. Java creates a StringBuilder object to handle the String
+     * concatenation. And if the log level is not DEBUG then the resulting String
+     * will be Garbage Collected without being used.
+     */
+    LOGGER.debug("Example 1 : Key=" + key + ", Value=" + value);
+
+    /*
+     * Don't do this unless you need the formatting functions. String.format() is
+     * more expensive than String concatenation.
+     */
+    LOGGER.debug(String.format("Example 2 : Key=%s, Value=%s", key, value));
+
+    /*
+     * Instead use the {} place-holder format. This also has the benefit of keeping
+     * formatting and data separate for easier editing.
+     */
+    LOGGER.debug("Example 3 : Key={}, Value={}", key, value);
+
+    /*
+     * Best practices for using {} place-holders when logging messages and
+     * Exceptions.
      */
 
     // Valid. Two place-holders and two parameters.
-    LOGGER.info("msg: {}, {}.", "Hello", "World");
+    LOGGER.info("Example 4 : msg: {}, {}.", "Hello", "World");
 
-    // Invalid. This logging call has 2 place-holders, but only one parameter.
-    LOGGER.info("msg: {}, {}.", "Hello");
+    // Bad. This logging call has 2 place-holders, but only one parameter.
+    LOGGER.info("Example 5 : msg: {}, {}.", "Hello");
 
-    // Valid. How to have {} display in a logging message.
-    LOGGER.info("msg: \\{}, {}.", "World");
+    // Valid. If you need to show {} in a log, here is how.
+    LOGGER.info("Example 6 : msg: \\{}, {}.", "World");
 
     /*
-     * Logging Exceptions.
+     * Best practices for logging Exceptions.
+     * 
+     * Important: All the logging methods take a Throwable object as an optional
+     * final argument so it is not necessary to use place-holders when logging
+     * exceptions.
      */
-    RuntimeException ex = new RuntimeException("Something is wrong!");
+    RuntimeException ex = new RuntimeException("This is an Exception!");
 
-    // Invalid. Throwable instance does not need placeholder if it is the last
+    // Bad. Throwable instance does not need placeholder if it is the last
     // argument. In this case, the second place-holder is ignored.
-    LOGGER.error("msg: {}, {}", "Hello", ex);
+    LOGGER.error("Example 7 : msg: {}, {}", "Hello", ex);
+
+    // Bad. There is no need to log getMessage() because the Exception's
+    // message is already logged with the Exception.
+    LOGGER.error("Example 8 : msg: {}, {}", ex.getMessage(), ex);
 
     // Valid. The Exception, including its message, will be printed in the log.
     // There is no need to separately log the message.
-    LOGGER.error("msg: {}", "Hello", new RuntimeException("Correct way to log an exception."));
+    LOGGER.error("Example 9 : msg: {}", "Hello", new RuntimeException("Correct way to log an exception."));
 
     /*
      * Create a big ugly map of random Strings. This is something that would never
@@ -118,7 +152,7 @@ public class LoggingTest {
 
     // You can use newlines and other formatting in log messages. It will just make
     // the logs look worse.
-    LOGGER.info("Logging with \n formatting!");
+    LOGGER.info("Logging with \n formatting!\nWhy do this?");
   }
 
   /**
@@ -131,7 +165,7 @@ public class LoggingTest {
    * @param argument
    *          Object list of things to be logged.
    */
-  public static void logIfDebugEnabled(Object... argument) {
+  public static void logIfDebugEnabled(final Object... argument) {
     if (LOGGER.isDebugEnabled()) {
       StringBuilder logString = new StringBuilder();
       for (Object object : argument) {
@@ -139,6 +173,18 @@ public class LoggingTest {
       }
       LOGGER.debug(logString.toString());
     }
+  }
+
+  private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+  public static String randomAlphaNumeric(int count) {
+    StringBuilder builder = new StringBuilder();
+    while (count-- != 0) {
+      int character = (int) (Math.random() * ALPHA_NUMERIC_STRING.length());
+      builder.append(ALPHA_NUMERIC_STRING.charAt(character));
+    }
+
+    return builder.toString();
   }
 
 }
