@@ -1,6 +1,5 @@
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class LoggingTest {
 
-  /** Instantiate nothing! */
+  /** Instantiate nothing. */
   private LoggingTest() {
   }
 
@@ -29,7 +28,7 @@ public final class LoggingTest {
    * Try to cause every kind of logging problem and show best practices.
    * 
    * @param args
-   *          Unused
+   *          Command line arguments.
    */
   public static void main(final String[] args) {
     String key = "Hello";
@@ -39,20 +38,26 @@ public final class LoggingTest {
      * Don't do this. Java creates a StringBuilder object to handle the String
      * concatenation. And if the log level is not DEBUG then the resulting String
      * will be Garbage Collected without being used.
+     * 
+     * Hint: Set logging level to INFO and use a debugger on this line.
      */
-    LOGGER.debug("Example 1 : Key=" + key + ", Value=" + value);
+    LOGGER.debug("Example 1 : String concatenation : Key=" + key + ", Value=" + value);
 
     /*
      * Don't do this unless you need the formatting functions. String.format() is
      * more expensive than String concatenation.
      */
-    LOGGER.debug(String.format("Example 2 : Key=%s, Value=%s", key, value));
+    LOGGER.debug(String.format("Example 2 : String format : Key=%s, Value=%s", key, value));
 
     /*
-     * Instead use the {} place-holder format. This also has the benefit of keeping
-     * formatting and data separate for easier editing.
+     * Instead use the {} place-holder format.
+     * 
+     * The benefit is that the parameters will be interpolated into the message only
+     * if and when the message is output to the log.
+     * 
+     * Another benefit is keeping formatting and data separate for easier editing.
      */
-    LOGGER.debug("Example 3 : Key={}, Value={}", key, value);
+    LOGGER.debug("Example 3 : Parameters : Key={}, Value={}", key, value);
 
     /*
      * Best practices for using {} place-holders when logging messages and
@@ -60,13 +65,13 @@ public final class LoggingTest {
      */
 
     // Valid. Two place-holders and two parameters.
-    LOGGER.info("Example 4 : msg: {}, {}.", "Hello", "World");
+    LOGGER.info("Example 4 : Correct number of place-holders : {}, {}.", "Hello", "World");
 
     // Bad. This logging call has 2 place-holders, but only one parameter.
-    LOGGER.info("Example 5 : msg: {}, {}.", "Hello");
+    LOGGER.info("Example 5 : Missing parameter : {}, {}.", "Hello");
 
     // Valid. If you need to show {} in a log, here is how.
-    LOGGER.info("Example 6 : msg: \\{}, {}.", "World");
+    LOGGER.info("Example 6 : How to log \\{} : \\{}, {}.", "World");
 
     /*
      * Best practices for logging Exceptions.
@@ -75,32 +80,32 @@ public final class LoggingTest {
      * final argument so it is not necessary to use place-holders when logging
      * exceptions.
      */
-    RuntimeException ex = new RuntimeException("This is an Exception!");
+    RuntimeException ex1 = new RuntimeException("This is an Exception!");
 
     // Bad. Throwable instance does not need placeholder if it is the last
     // argument. In this case, the second place-holder is ignored.
-    LOGGER.error("Example 7 : msg: {}, {}", "Hello", ex);
+    LOGGER.error("Example 7 : Exception doesn't use parameter : {}, {}", key, ex1);
 
     // Bad. There is no need to log getMessage() because the Exception's
     // message is already logged with the Exception.
-    LOGGER.error("Example 8 : msg: {}, {}", ex.getMessage(), ex);
+    LOGGER.error("Example 8 : No need to log Exception's Message : {}, {}", ex1.getMessage(), ex1);
 
     // Valid. The Exception, including its message, will be printed in the log.
     // There is no need to separately log the message.
-    LOGGER.error("Example 9 : msg: {}", "Hello", new RuntimeException("Correct way to log an exception."));
+    RuntimeException ex2 = new RuntimeException("Correct way to log an exception.");
+    LOGGER.error("Example 9 : Correct way to log Exception : {}", key, ex2);
 
     /*
      * Create a big ugly map of random Strings. This is something that would never
      * be logged unless necessary for debugging and takes work to generate the
      * String representation.
      * 
-     * An important goal with logging is to make sure logging this Map does not
-     * impact application performance.
+     * An important goal with logging is to make sure logging Objects like this does
+     * not impact application performance.
      */
-    RandomString gen = new RandomString(10, ThreadLocalRandom.current());
     Map<String, String> bigUglyMap = new HashMap<>(1000);
     for (int i = 0; i < 1000; i++) {
-      bigUglyMap.put(gen.nextString(), gen.nextString());
+      bigUglyMap.put(randomAlphaString(10), randomAlphaString(10));
     }
 
     /*
@@ -110,27 +115,19 @@ public final class LoggingTest {
      * all primitives will be boxed. Therefore the following line wastes the time it
      * takes to build the final String for concatenation.
      */
-    LOGGER.trace("Trace Logging String Concatenation: " + bigUglyMap);
+    LOGGER.trace("Example 10 : Trace Logging with String Concatenation : " + bigUglyMap);
 
     /*
-     * Don't do this. Won't get logged (because it's a trace message), but
+     * Don't do this. Will rarely get logged (because it's a trace message), but
      * toString() will still be called.
      */
-    LOGGER.trace("Trace Logging toString(): {}", bigUglyMap.toString());
+    LOGGER.trace("Example 11 : Trace Logging with toString() : {}", bigUglyMap.toString());
 
     /*
      * Do this. Won't call toString() unless logging is at trace level.
      */
-    LOGGER.trace("Trace Logging Parameter: {}", bigUglyMap);
+    LOGGER.trace("Example 12 : Trace Logging with Parameter, no toString() : {}", bigUglyMap);
 
-    /*
-     * Do this. This will call toString() when the message is logged.
-     */
-    LOGGER.info("Info Logging Parameter: {}", bigUglyMap);
-
-    RuntimeException e = new RuntimeException("Here in exception.");
-    LOGGER.info("Info Logging Parameter Exception: ", e);
-    // LOGGER.info(e);
     /*
      * If you can't override toString() and need to output a log message, here is
      * one way to do it without calling the String creation method unnecessarily.
@@ -146,13 +143,15 @@ public final class LoggingTest {
     /*
      * This boxes the calculation.
      */
-    LOGGER.info("Here is a calc : {}", a - b);
+    LOGGER.info("Example 14 : Boxing example : {} - {} = {}", a, b, a - b);
 
-    LOGGER.info("Here is an array : {} {} {}", (Object[]) args);
+    String[] ary = { "one", "two", "three" };
+    LOGGER.info("Example 15 : Logging an array - Too many values : {} {}", (Object[]) ary);
+    LOGGER.info("Example 16 : Logging an array - Too many place-holders : {} {} {} {}", (Object[]) ary);
 
     // You can use newlines and other formatting in log messages. It will just make
-    // the logs look worse.
-    LOGGER.info("Logging with \n formatting!\nWhy do this?");
+    // the logs look worse and harder to parse.
+    LOGGER.info("Logging with \n formatting!\nPlease don't do this!\n\n\tOh\n\t\tthe\n\t\t\t\thumanity!");
   }
 
   /**
@@ -175,13 +174,17 @@ public final class LoggingTest {
     }
   }
 
-  private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-  public static String randomAlphaNumeric(int count) {
-    StringBuilder builder = new StringBuilder();
+  /**
+   * Generate random Alpha String of a given length.
+   * 
+   * @param count
+   *          length of String to generate
+   * @return Random String of Alpha chars of count length.
+   */
+  public static String randomAlphaString(int count) {
+    StringBuilder builder = new StringBuilder(count);
     while (count-- != 0) {
-      int character = (int) (Math.random() * ALPHA_NUMERIC_STRING.length());
-      builder.append(ALPHA_NUMERIC_STRING.charAt(character));
+      builder.append((char) ('A' + (int) (Math.random() * 26)));
     }
 
     return builder.toString();
