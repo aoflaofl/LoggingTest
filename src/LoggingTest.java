@@ -1,6 +1,3 @@
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,14 +47,14 @@ public final class LoggingTest {
     LOGGER.debug(String.format("Example 2 : String format : Key=%s, Value=%s", key, value));
 
     /*
-     * Instead use the {} place-holder format.
+     * Do this instead: Use the {} place-holder format.
      * 
      * The benefit is that the parameters will be interpolated into the message only
      * if and when the message is output to the log.
      * 
-     * Another benefit is keeping formatting and data separate for easier editing.
+     * Another benefit is it keeps data separate from formatting for easier editing.
      */
-    LOGGER.debug("Example 3 : Parameters : Key={}, Value={}", key, value);
+    LOGGER.debug("Example 3 : Using Parameters : Key={}, Value={}", key, value);
 
     /*
      * Best practices for using {} place-holders when logging messages and
@@ -103,10 +100,7 @@ public final class LoggingTest {
      * An important goal with logging is to make sure logging Objects like this does
      * not impact application performance.
      */
-    Map<String, String> bigUglyMap = new HashMap<>(1000);
-    for (int i = 0; i < 1000; i++) {
-      bigUglyMap.put(randomAlphaString(10), randomAlphaString(10));
-    }
+    LongLogMessageObject bigUglyLogMessage = new LongLogMessageObject();
 
     /*
      * Don't do this. It creates a StringBuilder behind the scenes to concatenate
@@ -115,43 +109,59 @@ public final class LoggingTest {
      * all primitives will be boxed. Therefore the following line wastes the time it
      * takes to build the final String for concatenation.
      */
-    LOGGER.trace("Example 10 : Trace Logging with String Concatenation : " + bigUglyMap);
+    LOGGER.trace("Example 10 : Trace Logging with String Concatenation : " + bigUglyLogMessage);
 
     /*
      * Don't do this. Will rarely get logged (because it's a trace message), but
      * toString() will still be called.
      */
-    LOGGER.trace("Example 11 : Trace Logging with toString() : {}", bigUglyMap.toString());
+    LOGGER.trace("Example 11 : Trace Logging with toString() : {}", bigUglyLogMessage.toString());
 
     /*
      * Do this. Won't call toString() unless logging is at trace level.
      */
-    LOGGER.trace("Example 12 : Trace Logging with Parameter, no toString() : {}", bigUglyMap);
+    LOGGER.trace("Example 12 : Trace Logging with Parameter, no toString() : {}", bigUglyLogMessage);
 
     /*
-     * If you can't override toString() and need to output a log message, here is
-     * one way to do it without calling the String creation method unnecessarily.
-     * There are similar methods for all log levels.
+     * If you need to generate a logging message without using an Object's
+     * toString() method, then the most efficient way is to wrap it in a check for
+     * the Logging level.
+     * 
+     * This is the most efficient way to do logging since it avoids as much overhead
+     * as possible, but it does clutter up code.
      */
-    if (LOGGER.isDebugEnabled()) {
-      // LOGGER.trace("Trace Logging Parameter and custom String: {}",
-      // m.toTraceLoggingString());
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("Example 13 : Trace Logging Parameter and custom String : {}",
+          bigUglyLogMessage.longerLoggingMessage());
     }
 
+    /*
+     * Miscellaneous logging topics.
+     */
+
+    /*
+     * Logging boxes primitives.
+     */
     int a = 12;
     int b = 222;
-    /*
-     * This boxes the calculation.
-     */
     LOGGER.info("Example 14 : Boxing example : {} - {} = {}", a, b, a - b);
 
-    String[] ary = { "one", "two", "three" };
-    LOGGER.info("Example 15 : Logging an array - Too many values : {} {}", (Object[]) ary);
-    LOGGER.info("Example 16 : Logging an array - Too many place-holders : {} {} {} {}", (Object[]) ary);
+    /*
+     * Using Arrays as Parameters.
+     */
 
-    // You can use newlines and other formatting in log messages. It will just make
-    // the logs look worse and harder to parse.
-    LOGGER.info("Logging with \n formatting!\nPlease don't do this!\n\n\tOh\n\t\tthe\n\t\t\t\thumanity!");
+    /*
+     * Logging Arrays of Objects.
+     */
+    String[] ary = { "one", "two", "three" };
+    LOGGER.info("Example 15 : Logging an array of Objects - Too many values : {} {}", (Object[]) ary);
+    LOGGER.info("Example 16 : Logging an array of Objects - Too many place-holders : {} {} {} {}", (Object[]) ary);
+
+    /*
+     * Logging Arrays of primitives.
+     */
+    int[] intAry = { 1, 2, 3 };
+    LOGGER.info("Example 17 : Logging an array of primitives : {} {}", intAry);
   }
 
   /**
@@ -173,21 +183,4 @@ public final class LoggingTest {
       LOGGER.debug(logString.toString());
     }
   }
-
-  /**
-   * Generate random Alpha String of a given length.
-   * 
-   * @param count
-   *          length of String to generate
-   * @return Random String of Alpha chars of count length.
-   */
-  public static String randomAlphaString(int count) {
-    StringBuilder builder = new StringBuilder(count);
-    while (count-- != 0) {
-      builder.append((char) ('A' + (int) (Math.random() * 26)));
-    }
-
-    return builder.toString();
-  }
-
 }
