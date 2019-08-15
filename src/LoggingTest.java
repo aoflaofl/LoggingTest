@@ -36,7 +36,8 @@ public final class LoggingTest {
      * concatenation. And if the log level is not DEBUG then the resulting String
      * will be Garbage Collected without being used.
      * 
-     * Hint: Set logging level to INFO and use a debugger on this line.
+     * Hint: Set logging level to INFO and use a debugger on this line. You'll see
+     * the String being built and then being discarded without being logged.
      */
     LOGGER.debug("Example 1 : String concatenation : Key=" + key + ", Value=" + value);
 

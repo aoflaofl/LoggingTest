@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * An object to do little more than create ugly log messages.
@@ -10,6 +11,7 @@ import java.util.Map;
 public final class LongLogMessageObject {
 
   private Map<String, String> bigUglyMap = new HashMap<>(1000);
+  static Random ran = new Random();
 
   LongLogMessageObject() {
     for (int i = 0; i < 1000; i++) {
@@ -36,7 +38,7 @@ public final class LongLogMessageObject {
   public static String randomAlphaString(final int count) {
     StringBuilder builder = new StringBuilder(count);
     for (int i = 0; i < count; i++) {
-      builder.append((char) ('A' + (int) (Math.random() * 26)));
+      builder.append((char) ('A' + ran.nextInt(26)));
     }
 
     return builder.toString();
